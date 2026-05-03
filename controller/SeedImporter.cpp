@@ -93,13 +93,13 @@ bool SeedImporter::importTwoColumnCsv(const QString& tableName, const QString& c
             continue;
         }
 
-        insertQuery.addBindValue(code);
-        insertQuery.addBindValue(name);
+        insertQuery.bindValue(0, code);
+        insertQuery.bindValue(1, name);
         if (!insertQuery.exec()) {
             m_db.rollback();
             return false;
         }
-        insertQuery.clear();
+        insertQuery.finish();
     }
 
     if (!m_db.commit()) {

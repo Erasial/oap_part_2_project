@@ -26,6 +26,10 @@ int main(int argc, char *argv[]) {
     const QString seedDirPath = rootDir + "/../database/seed";
 
     if (!DatabaseManager::instance().initialize(databasePath, schemaPath, seedDirPath)) {
+        const QString errorText = DatabaseManager::instance().lastError().isEmpty()
+            ? "Database initialization failed."
+            : DatabaseManager::instance().lastError();
+        QMessageBox::critical(nullptr, "Startup error", errorText);
         return 1;
     }
 

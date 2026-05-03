@@ -10,6 +10,7 @@ public:
     bool initialize(const QString& databasePath, const QString& schemaPath, const QString& seedDirPath);
     bool verifyBootstrap(QString* errorMessage = nullptr) const;
     QSqlDatabase database() const;
+    const QString& lastError() const;
 
 private:
     DatabaseManager() = default;
@@ -17,6 +18,8 @@ private:
     bool ensureSchema(const QString& schemaPath);
     bool enablePragmas();
     bool seedLookups(const QString& seedDirPath);
+    void setLastError(const QString& message);
 
     QSqlDatabase m_db;
+    QString m_lastError;
 };

@@ -63,6 +63,7 @@ DatabaseManager& DatabaseManager::instance() {
 }
 
 bool DatabaseManager::initialize(const QString& databasePath, const QString& schemaPath, const QString& seedDirPath) {
+    m_lastError.clear();
     if (m_db.isOpen()) {
         return true;
     }
@@ -70,6 +71,7 @@ bool DatabaseManager::initialize(const QString& databasePath, const QString& sch
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(databasePath);
     if (!m_db.open()) {
+        setLastError("Failed to open database: " + m_db.lastError().text() + " (" + databasePath + ")");
         return false;
     }
 
@@ -90,6 +92,10 @@ bool DatabaseManager::initialize(const QString& databasePath, const QString& sch
 
 QSqlDatabase DatabaseManager::database() const {
     return m_db;
+}
+
+const QString& DatabaseManager::lastError() const {
+    return m_lastError;
 }
 
 bool DatabaseManager::verifyBootstrap(QString* errorMessage) const {
@@ -142,9 +148,11 @@ bool DatabaseManager::verifyBootstrap(QString* errorMessage) const {
 bool DatabaseManager::enablePragmas() {
     QSqlQuery query(m_db);
     if (!query.exec("PRAGMA foreign_keys = ON")) {
+        setLastError("Failed to enable foreign keys.");
         return false;
     }
     if (!query.exec("PRAGMA journal_mode = WAL")) {
+        setLastError("Failed to enable WAL mode.");
         return false;
     }
     return true;
@@ -157,10 +165,16 @@ bool DatabaseManager::ensureSchema(const QString& schemaPath) {
 
     const QString sql = readFileContents(schemaPath);
     if (sql.isEmpty()) {
+        setLastError("Schema file missing or empty: " + schemaPath);
         return false;
     }
 
-    return executeSqlScript(m_db, sql);
+    if (!executeSqlScript(m_db, sql)) {
+        setLastError("Failed to execute schema: " + schemaPath);
+        return false;
+    }
+
+    return true;
 }
 
 bool DatabaseManager::seedLookups(const QString& seedDirPath) {
@@ -170,14 +184,34 @@ bool DatabaseManager::seedLookups(const QString& seedDirPath) {
     const QString icpc2Path = seedDirPath + "/icpc2_codes.csv";
     const QString achiPath = seedDirPath + "/achi_codes.csv";
 
+    if (!QFile::exists(icd10Path)) {
+        setLastError("Missing seed file: " + icd10Path);
+        return false;
+    }
+    if (!QFile::exists(icpc2Path)) {
+        setLastError("Missing seed file: " + icpc2Path);
+        return false;
+    }
+    if (!QFile::exists(achiPath)) {
+        setLastError("Missing seed file: " + achiPath);
+        return false;
+    }
+
     if (!importer.importIfEmpty("icd10_codes", icd10Path)) {
+        setLastError("Failed to import seed file: " + icd10Path);
         return false;
     }
     if (!importer.importIfEmpty("icpc2_codes", icpc2Path)) {
+        setLastError("Failed to import seed file: " + icpc2Path);
         return false;
     }
     if (!importer.importIfEmpty("achi_codes", achiPath)) {
+        setLastError("Failed to import seed file: " + achiPath);
         return false;
     }
     return true;
+}
+
+void DatabaseManager::setLastError(const QString& message) {
+    m_lastError = message;
 }
