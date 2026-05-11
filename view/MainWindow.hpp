@@ -21,6 +21,9 @@ public:
                const PasswordHasher& hasher,
                QWidget* parent = nullptr);
 
+signals:
+    void logoutRequested();
+
 private:
     SessionContext& m_session;
     PatientController& m_patientController;

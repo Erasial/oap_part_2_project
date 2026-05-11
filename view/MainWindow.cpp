@@ -12,6 +12,8 @@
 
 #include <QStatusBar>
 #include <QTabWidget>
+#include <QMenuBar>
+#include <QAction>
 
 MainWindow::MainWindow(SessionContext& session,
                        PatientController& patientController,
@@ -28,9 +30,20 @@ MainWindow::MainWindow(SessionContext& session,
       m_lookupRepository(lookupRepository),
       m_hasher(hasher) {
     setWindowTitle("MedLogApp");
+    resize(1024, 768);
+
+    auto* sessionMenu = menuBar()->addMenu("Session");
+    auto* logoutAction = new QAction("Logout", this);
+    sessionMenu->addAction(logoutAction);
 
     auto* tabs = new QTabWidget(this);
-    tabs->addTab(new PatientsWidget(m_patientController, tabs), "Patients");
+    tabs->addTab(new PatientsWidget(m_patientController,
+                    m_visitController,
+                    m_doctorController,
+                    m_lookupRepository,
+                    m_session,
+                    tabs),
+           "Patients");
     tabs->addTab(new VisitsWidget(m_visitController, m_patientController, m_doctorController, m_lookupRepository, m_session, tabs), "Visits");
     if (m_session.isAdmin()) {
       tabs->addTab(new DoctorsWidget(m_doctorController, m_hasher, tabs), "Doctors");
@@ -40,4 +53,9 @@ MainWindow::MainWindow(SessionContext& session,
 
     const QString roleLabel = m_session.isAdmin() ? "Role: Admin" : "Role: Doctor";
     statusBar()->showMessage(roleLabel);
+
+    connect(logoutAction, &QAction::triggered, this, [this]() {
+      emit logoutRequested();
+      close();
+    });
 }

@@ -16,6 +16,7 @@ public:
     bool findVisit(int visitId, Visit& visit) const;
     QVector<Visit> listVisits() const;
     QVector<Visit> listOwnVisits() const;
+    QVector<Visit> listByPatient(int patientId) const;
 
 private:
     bool canMutateVisit(const Visit& visit) const;

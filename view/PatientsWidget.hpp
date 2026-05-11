@@ -2,41 +2,49 @@
 
 #include <QWidget>
 
+#include "controller/DoctorController.hpp"
+#include "controller/LookupRepository.hpp"
 #include "controller/PatientController.hpp"
+#include "controller/SessionContext.hpp"
+#include "controller/VisitController.hpp"
 
-class QDateEdit;
 class QLineEdit;
 class QTableWidget;
+class QPushButton;
 
 class PatientsWidget : public QWidget {
     Q_OBJECT
 
 public:
-    explicit PatientsWidget(PatientController& controller, QWidget* parent = nullptr);
+    explicit PatientsWidget(PatientController& controller,
+                            VisitController& visitController,
+                            DoctorController& doctorController,
+                            LookupRepository& lookupRepository,
+                            SessionContext& session,
+                            QWidget* parent = nullptr);
 
 private slots:
     void loadPatients();
     void applyFilter();
-    void onSelectionChanged();
     void handleAdd();
     void handleUpdate();
     void handleDelete();
-    void clearForm();
+    void openPatientVisits();
 
 private:
-    Patient buildPatientFromForm(int id) const;
-    void setFormFromPatient(const Patient& patient);
-    void setFormEnabled(bool enabled);
     int selectedPatientId() const;
-    bool validateForm(QString& errorMessage) const;
     bool matchesFilter(const Patient& patient, const QString& filter) const;
+    void updateActionStates();
 
     PatientController& m_controller;
+    VisitController& m_visitController;
+    DoctorController& m_doctorController;
+    LookupRepository& m_lookupRepository;
+    SessionContext& m_session;
     QTableWidget* m_table = nullptr;
     QLineEdit* m_filterEdit = nullptr;
-    QLineEdit* m_firstNameEdit = nullptr;
-    QLineEdit* m_lastNameEdit = nullptr;
-    QDateEdit* m_birthdateEdit = nullptr;
-    QLineEdit* m_phoneEdit = nullptr;
+    QPushButton* m_addButton = nullptr;
+    QPushButton* m_updateButton = nullptr;
+    QPushButton* m_deleteButton = nullptr;
     QVector<Patient> m_allPatients;
 };

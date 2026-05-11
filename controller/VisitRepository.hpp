@@ -16,6 +16,7 @@ public:
     bool findById(int visitId, Visit& visit) const;
     QVector<Visit> listAll() const;
     QVector<Visit> listByDoctor(int doctorId) const;
+    QVector<Visit> listByPatient(int patientId) const;
 
 private:
     bool loadVisit(QSqlQuery& query, Visit& visit) const;

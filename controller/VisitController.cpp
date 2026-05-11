@@ -69,6 +69,14 @@ QVector<Visit> VisitController::listOwnVisits() const {
     return {};
 }
 
+QVector<Visit> VisitController::listByPatient(int patientId) const {
+    if (!m_session.isAdmin() && !m_session.isDoctor()) {
+        return {};
+    }
+
+    return m_repository.listByPatient(patientId);
+}
+
 bool VisitController::canMutateVisit(const Visit& visit) const {
     if (m_session.isAdmin()) {
         return true;

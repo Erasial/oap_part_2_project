@@ -111,6 +111,7 @@ void DoctorsWidget::handleAdd() {
 
     loadDoctors();
     clearForm();
+    QMessageBox::information(this, "Doctor created", "Doctor was added successfully.");
 }
 
 void DoctorsWidget::handleUpdate() {
@@ -133,6 +134,7 @@ void DoctorsWidget::handleUpdate() {
     }
 
     loadDoctors();
+    QMessageBox::information(this, "Doctor updated", "Doctor was updated successfully.");
 }
 
 void DoctorsWidget::handleDelete() {
@@ -154,6 +156,7 @@ void DoctorsWidget::handleDelete() {
 
     loadDoctors();
     clearForm();
+    QMessageBox::information(this, "Doctor deleted", "Doctor was deleted successfully.");
 }
 
 void DoctorsWidget::clearForm() {

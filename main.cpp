@@ -53,13 +53,27 @@ int main(int argc, char *argv[]) {
     PatientController patientController(patientRepository, session);
     VisitController visitController(visitRepository, session);
 
-    LoginDialog loginDialog(authService);
-    if (loginDialog.exec() != QDialog::Accepted) {
-        return 0;
+    bool keepRunning = true;
+    while (keepRunning) {
+        LoginDialog loginDialog(authService);
+        if (loginDialog.exec() != QDialog::Accepted) {
+            break;
+        }
+
+        bool loggedOut = false;
+        MainWindow mainWindow(session, patientController, visitController, doctorController, lookupRepository, hasher);
+        QObject::connect(&mainWindow, &MainWindow::logoutRequested, [&]() {
+            authService.logout();
+            loggedOut = true;
+        });
+
+        mainWindow.show();
+        app.exec();
+
+        if (!loggedOut) {
+            keepRunning = false;
+        }
     }
 
-    MainWindow mainWindow(session, patientController, visitController, doctorController, lookupRepository, hasher);
-    mainWindow.show();
-
-    return app.exec();
+    return 0;
 }

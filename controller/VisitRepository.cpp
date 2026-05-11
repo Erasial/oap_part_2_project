@@ -179,6 +179,34 @@ QVector<Visit> VisitRepository::listByDoctor(int doctorId) const {
     return visits;
 }
 
+QVector<Visit> VisitRepository::listByPatient(int patientId) const {
+    QVector<Visit> visits;
+
+    QSqlQuery query(m_db);
+    query.prepare(
+        "SELECT id, patient_id, doctor_id, visit_date, duration_minutes, notes "
+        "FROM visits WHERE patient_id = ? ORDER BY visit_date DESC"
+    );
+    query.addBindValue(patientId);
+
+    if (!query.exec()) {
+        return visits;
+    }
+
+    while (query.next()) {
+        Visit visit;
+        visit.setId(query.value(0).toInt());
+        visit.setPatientId(query.value(1).toInt());
+        visit.setDoctorId(query.value(2).toInt());
+        visit.setVisitDate(query.value(3).toDateTime());
+        visit.setDurationMinutes(query.value(4).toInt());
+        visit.setNotes(query.value(5).toString());
+        visits.append(visit);
+    }
+
+    return visits;
+}
+
 bool VisitRepository::replaceVisitLinks(int visitId, const QString& tableName, const QVector<int>& ids, const QString& idColumn) const {
     QSqlQuery deleteQuery(m_db);
     deleteQuery.prepare("DELETE FROM " + tableName + " WHERE visit_id = ?");
